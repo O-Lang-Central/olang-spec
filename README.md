@@ -19,7 +19,7 @@ O-Lang is **not** a developer framework, DSL, or LangChain alternative. It is a 
 - **License**: [Apache 2.0](./LICENSE)
 
 ## Key Links
--  [Read v1.1 Specification](./spec/v1.1/index.html)
+-  [Read v1.1 Specification](https://o-lang-central.github.io/spec/v1.1.html)
 -  [Resolver Test Harness](https://github.com/O-Lang-Central/resolver-test)
 -  [Conformance Policy](./conformance/resolver.md)
 -  [Governance Process](./governance/process.md)
