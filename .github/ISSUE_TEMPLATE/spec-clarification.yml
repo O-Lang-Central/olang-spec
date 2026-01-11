@@ -1,0 +1,20 @@
+name: Specification Clarification
+about: Request clarification on existing v1.1 spec text
+title: "Clarify: [section] - [brief description]"
+labels: ["clarification", "v1.1"]
+body:
+  - type: markdown
+    attributes:
+      value: "For v1.1 only. No new features."
+  - type: input
+    id: section
+    attributes:
+      label: Section (e.g., 4.2, 14.1)
+    validations:
+      required: true
+  - type: textarea
+    id: ambiguity
+    attributes:
+      label: What is unclear?
+    validations:
+      required: true

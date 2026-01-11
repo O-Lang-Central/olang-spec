@@ -1,0 +1,17 @@
+name: Specification Bug
+about: Report contradiction, typo, or logical error in v1.1
+title: "Bug: [section] - [issue]"
+labels: ["bug", "v1.1"]
+body:
+  - type: input
+    id: section
+    attributes:
+      label: Section
+    validations:
+      required: true
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+    validations:
+      required: true

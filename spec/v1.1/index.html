@@ -1,0 +1,954 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>O-Lang Protocol Specification v1.1</title>
+  <meta name="description" content="O-Lang is a semantic orchestration protocol for governing AI and automation workflows outside application code.">
+  <style>
+    :root {
+      --primary: #1e40af;
+      --primary-dark: #1d3691;
+      --dark: #0f172a;
+      --light: #f8fafc;
+      --gray: #64748b;
+      --border: #e2e8f0;
+      --code-bg: #f1f5f9;
+      --warning-bg: #fef3c7;
+      --warning-border: #f59e0b;
+      --success-bg: #dcfce7;
+      --success-border: #22c55e;
+      --sidebar-width: 260px;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      line-height: 1.6;
+      color: var(--dark);
+      background: var(--light);
+    }
+
+    /* Layout */
+    .app-layout {
+      display: flex;
+      min-height: 100vh;
+    }
+
+    /* Sidebar */
+    .sidebar {
+      width: var(--sidebar-width);
+      background: #fff;
+      border-right: 1px solid var(--border);
+      position: fixed;
+      top: 0;
+      left: 0;
+      height: 100vh;
+      overflow-y: auto;
+      z-index: 1000;
+      transition: transform 0.3s ease;
+    }
+
+    .sidebar-header {
+      padding: 1.5rem 1rem 1rem 1.5rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .sidebar-header a {
+      text-decoration: none;
+      color: var(--primary);
+      font-weight: 700;
+      font-size: 1.05rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .sidebar-header a:hover {
+      text-decoration: underline;
+    }
+
+    .toc-list {
+      list-style: none;
+      padding: 1rem 0;
+      margin: 0;
+    }
+
+    .toc-list li {
+      margin: 0;
+    }
+
+    .toc-list a {
+      display: block;
+      padding: 0.45rem 1.5rem;
+      color: var(--gray);
+      text-decoration: none;
+      font-size: 0.93rem;
+    }
+
+    .toc-list a:hover,
+    .toc-list a.active {
+      color: var(--primary);
+      background: rgba(30, 64, 175, 0.05);
+    }
+
+    /* Main content */
+    .main-content {
+      flex: 1;
+      margin-left: var(--sidebar-width);
+    }
+
+    header {
+      background: white;
+      border-bottom: 1px solid var(--border);
+      padding: 2rem;
+      text-align: center;
+    }
+
+    .header-content {
+      max-width: 800px;
+      margin: 0 auto;
+    }
+
+    h1 {
+      font-size: 2.5rem;
+      font-weight: 800;
+      color: var(--primary);
+      letter-spacing: -0.5px;
+      margin-bottom: 1rem;
+    }
+
+    .spec-meta {
+      background: var(--code-bg);
+      padding: 1rem;
+      border-radius: 6px;
+      font-family: monospace;
+      font-size: 0.9rem;
+      margin: 1rem 0;
+    }
+
+    main {
+      max-width: 800px;
+      margin: 2rem auto;
+      padding: 0 1.5rem;
+    }
+
+    .section {
+      background: white;
+      padding: 2rem;
+      border-radius: 8px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+      margin-bottom: 2rem;
+    }
+
+    .section h2 {
+      font-size: 1.75rem;
+      margin-bottom: 1.5rem;
+      color: var(--primary-dark);
+      border-bottom: 2px solid var(--border);
+      padding-bottom: 0.5rem;
+    }
+
+    .section h3 {
+      font-size: 1.25rem;
+      margin: 1.5rem 0 1rem 0;
+      color: var(--primary);
+    }
+
+    .section h4 {
+      font-size: 1.1rem;
+      margin: 1.25rem 0 0.75rem 0;
+      color: var(--dark);
+    }
+
+    p { margin-bottom: 1rem; }
+    ul, ol { margin-bottom: 1rem; padding-left: 1.5rem; }
+    li { margin-bottom: 0.5rem; }
+
+    pre {
+      background: var(--code-bg);
+      padding: 1rem;
+      border-radius: 6px;
+      overflow-x: auto;
+      margin: 1rem 0;
+      font-family: 'SFMono-Regular', Consolas, monospace;
+      font-size: 0.9rem;
+    }
+
+    code {
+      font-family: 'SFMono-Regular', Consolas, monospace;
+      background: var(--code-bg);
+      padding: 0.125rem 0.25rem;
+      border-radius: 4px;
+      font-size: 0.9em;
+    }
+
+    .normative {
+      border-left: 4px solid var(--primary);
+      padding-left: 1rem;
+      margin: 1rem 0;
+      background: rgba(30, 64, 175, 0.05);
+    }
+
+    .warning {
+      background: var(--warning-bg);
+      border-left: 4px solid var(--warning-border);
+      padding: 1rem;
+      margin: 1.5rem 0;
+      border-radius: 0 6px 6px 0;
+    }
+
+    .success {
+      background: var(--success-bg);
+      border-left: 4px solid var(--success-border);
+      padding: 1rem;
+      margin: 1.5rem 0;
+      border-radius: 0 6px 6px 0;
+    }
+
+    .quote {
+      font-style: italic;
+      border-left: 3px solid var(--gray);
+      padding-left: 1rem;
+      margin: 1.5rem 0;
+      color: var(--gray);
+    }
+
+    .integration-example {
+      background: #f0f9ff;
+      border: 1px solid #bae6fd;
+      padding: 1rem;
+      border-radius: 6px;
+      margin: 1rem 0;
+    }
+
+    footer {
+      text-align: center;
+      padding: 2rem;
+      color: var(--gray);
+      font-size: 0.875rem;
+      border-top: 1px solid var(--border);
+      margin-top: 2rem;
+    }
+
+    /* Mobile */
+    @media (max-width: 900px) {
+      .sidebar {
+        transform: translateX(-100%);
+      }
+      .sidebar.open {
+        transform: translateX(0);
+      }
+      .main-content {
+        margin-left: 0;
+      }
+      main {
+        padding: 0 1.25rem;
+      }
+      header {
+        padding: 1.5rem;
+      }
+      h1 { font-size: 2rem; }
+    }
+
+    /* Hamburger toggle */
+    .hamburger {
+      display: none;
+      position: fixed;
+      top: 1.25rem;
+      left: 1rem;
+      background: var(--primary);
+      color: white;
+      width: 2.4rem;
+      height: 2.4rem;
+      border: none;
+      border-radius: 6px;
+      font-size: 1.2rem;
+      z-index: 2000;
+    }
+
+    @media (max-width: 900px) {
+      .hamburger {
+        display: block;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Mobile Menu Toggle -->
+  <button class="hamburger" id="menuToggle">☰</button>
+
+  <!-- Sidebar Navigation -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <a href="../">
+        ← O-Lang Home
+      </a>
+    </div>
+    <ul class="toc-list" id="toc-list"></ul>
+  </aside>
+
+  <!-- Main Spec Content -->
+  <div class="main-content">
+    <header>
+      <div class="header-content">
+        <h1>O-Lang Protocol Specification v1.1</h1>
+        <div class="spec-meta">
+          Protocol: O-Lang/1.1<br>
+          Status: Stable — Open for Review (Clarifications Only)<br>
+          Audience: Runtime implementers, SDK authors, platform & systems engineers<br>
+          License: Apache 2.0
+        </div>
+      </div>
+    </header>
+
+    <main>
+      <div class="section" id="sec-1">
+        <h2>1. Purpose & Philosophy</h2>
+        <h3>1.1 The Autonomy Crisis in AI Systems</h3>
+        <p>Current AI architectures grant <strong>unbounded autonomy</strong> to agents and LLMs. Developers construct workflows that:</p>
+        <ul>
+          <li>execute arbitrary code with full system permissions</li>
+          <li>make decisions without audit trails or policy constraints</li>
+          <li>bypass governance through embedded orchestration logic</li>
+          <li>produce non-reproducible, non-deterministic outcomes</li>
+        </ul>
+        <p>This creates <strong>unacceptable risk</strong> in regulated environments (healthcare, finance, government) where AI decisions impact human lives, compliance, and legal liability.</p>
+
+        <h3>1.2 From Agents to Governance</h3>
+        <p>The industry is transitioning from <strong>autonomous agents</strong> to <strong>governable coordinators</strong>. O-Lang enables this shift by:</p>
+        <ul>
+          <li><strong>Separating intent from execution</strong> — Workflow definitions declare <em>what</em> should happen, not <em>how</em> it should be implemented</li>
+          <li><strong>Enforcing policy at runtime</strong> — Every capability invocation is mediated by the kernel against explicit allow-lists and constraints</li>
+          <li><strong>Making meaning observable</strong> — Symbol validity, partial success, and semantic violations are surfaced as first-class runtime events</li>
+          <li><strong>Providing deterministic auditability</strong> — Identical inputs produce identical execution traces across all compliant implementations</li>
+        </ul>
+
+        <h3>1.3 The Governance Gap</h3>
+        <p>Existing orchestration frameworks (LangChain, LlamaIndex, etc.) operate <strong>inside application code</strong>, where:</p>
+        <ul>
+          <li>developer authority = execution authority</li>
+          <li>tools inherit permissions implicitly</li>
+          <li>no runtime enforcement layer exists</li>
+          <li>compliance is retrofitted, not built-in</li>
+        </ul>
+        <p>O-Lang closes this gap by providing a <strong>runtime-enforced governance boundary</strong> that exists <em>outside</em> application code.</p>
+
+        <h3>1.4 What O-Lang Provides</h3>
+        <p>O-Lang defines a portable protocol for:</p>
+        <ul>
+          <li><strong>Portable execution format</strong> — Workflows are language-agnostic, versionable, and human-readable</li>
+          <li><strong>Runtime-enforced policy boundary</strong> — <strong>Capabilities</strong> are explicitly allowed, never trusted</li>
+          <li><strong>Capability invocation contract</strong> — Standardized I/O, sandboxing, and error handling across all capabilities</li>
+          <li><strong>Semantic enforcement of workflow meaning</strong> — Symbols must exist in reality, not just in intent</li>
+        </ul>
+        <p><strong>O-Lang does not execute business logic.</strong><br>
+        It governs how logic is invoked, constrained, observed, and audited — transforming AI from autonomous agents to <strong>governable, certifiable systems</strong>.</p>
+
+        <h3>1.5 Trust vs Conformance</h3>
+        <p>O-Lang distinguishes between <strong>conformance</strong> and <strong>trust</strong>:</p>
+        <ul>
+          <li><strong>Conformance</strong> validates that a resolver declaration adheres to the O-Lang Resolver Contract (inputs, outputs, steps, failures).</li>
+          <li><strong>Trust</strong> is established by the runtime kernel, which enforces policy, validates capability behavior, and mediates all external interactions.</li>
+        </ul>
+        <p>A resolver may be <em>conformant</em> but not <em>trusted</em> — certification of entire packages (including runtime behavior) is a separate governance layer beyond static conformance.</p>
+
+        <h3>1.6 Key Definitions</h3>
+        <p>The following terms have specific meanings in the context of the O-Lang Protocol:</p>
+        <ul>
+          <li><strong>Kernel</strong>: A semantic runtime that parses workflows, enforces policy, validates capabilities, and emits auditable execution traces. It is <em>not</em> an executor of business logic.</li>
+          <li><strong>Workflow</strong>: A declarative, human-readable document that defines a sequence of steps, inputs, outputs, and failure modes. It is a <em>semantic contract</em>, not a script.</li>
+          <li><strong>Capability</strong>: An external, executable component (e.g., <code>@o-lang/notify-telegram</code>) that performs side effects (e.g., HTTP calls, LLM inference). Capabilities are <em>explicitly allowed but never trusted</em> by the kernel.</li>
+          <li><strong>Resolver</strong> (Conformance Context): A conformant workflow that adheres to the O-Lang Resolver Contract (Section 14). It is a <em>static declaration</em> with defined <code>inputs</code>, <code>outputs</code>, <code>steps</code>, and <code>failures</code>. This is what is validated by the official test harness.</li>
+          <li><strong>Symbol</strong>: A named value referenced in a workflow. Symbols include inputs, step outputs (<code>Save as</code>), emitted values, and persisted data. A symbol is either <em>defined</em> (exists in reality) or <em>undefined</em> (referenced but not produced) — never <code>null</code> or empty.</li>
+        </ul>
+        <p>These definitions supersede colloquial or implementation-specific usage.</p>
+      </div>
+
+      <div class="section" id="sec-2">
+        <h2>2. Core Concepts</h2>
+        <h3>2.1 Kernel (Normative)</h3>
+        <p>The Kernel is a semantic runtime, not an executor.</p>
+        <p>It is responsible for:</p>
+        <ul>
+          <li>parsing workflows</li>
+          <li>validating capability eligibility</li>
+          <li>enforcing execution policy</li>
+          <li>tracking symbol lifecycles</li>
+          <li>detecting semantic violations</li>
+          <li>producing auditable outputs</li>
+        </ul>
+        <div class="normative">
+          <strong>A kernel MUST NOT:</strong>
+          <ul>
+            <li>embed domain logic</li>
+            <li>infer missing values</li>
+            <li>silently ignore failures</li>
+            <li>bypass capability restrictions</li>
+          </ul>
+        </div>
+
+        <h3>2.2 Workflow</h3>
+        <p>A Workflow is a semantic contract, not a script.</p>
+        <p><strong>Characteristics:</strong></p>
+        <ul>
+          <li>deterministic step order</li>
+          <li>immutable inputs</li>
+          <li>symbol-tracked outputs</li>
+          <li>stateless execution</li>
+          <li>observable failure modes</li>
+        </ul>
+
+        <p><strong>Example:</strong></p>
+        <pre>Workflow "HR Summary" with policy_query, user_id
+
+Allow resolvers:
+- doc-search
+- llm-groq
+- notify-telegram
+
+Step 1: Ask doc-search "{policy_query}" Save as doc
+Step 2: Ask llm-groq "Summarize for staff:\n{doc.text}" Save as summary
+Step 3: Notify {user_id} using Telegram Save as notification
+
+Return summary</pre>
+
+        <p>This workflow demonstrates:</p>
+        <ul>
+          <li><strong>Deterministic order</strong>: Steps execute sequentially</li>
+          <li><strong>Immutable inputs</strong>: <code>policy_query</code> and <code>user_id</code> are read-only</li>
+          <li><strong>Symbol-tracked outputs</strong>: <code>doc</code>, <code>summary</code>, and <code>notification</code> are explicitly declared via <code>Save as</code></li>
+          <li><strong>Observable failure</strong>: If <code>llm-groq</code> fails, <code>summary</code> remains undefined — the kernel surfaces this as a semantic violation</li>
+          <li><strong>Stateless execution</strong>: No global state; all context flows through symbols</li>
+        </ul>
+        <p><strong>Note on typing</strong>: Input types are inferred from usage context or declared in the compiled resolver contract. The workflow syntax prioritizes readability; type safety is enforced at conformance time.</p>
+
+        <h3>2.3 Capability</h3>
+        <p>A Capability is an external executable boundary.</p>
+        <p><strong>Capabilities may be:</strong></p>
+        <ul>
+          <li>HTTP services</li>
+          <li>local binaries</li>
+          <li>containers</li>
+          <li>edge services</li>
+          <li>IoT hardware interfaces</li>
+        </ul>
+        <p><strong>Capabilities are never trusted.</strong><br>
+        All capability results are validated by the kernel, not assumed correct.</p>
+      </div>
+
+      <div class="section" id="sec-3">
+        <h2>3. Syntax Grammar and Keywords (Normative)</h2>
+        <h3>3.1 General Syntax Rules</h3>
+        <p>O-Lang uses a line-oriented, English-like syntax. Whitespace is not significant except within quoted strings. All keywords are case-insensitive but conventionally capitalized.</p>
+        <div class="normative">
+          <strong>Normative Language:</strong>
+          <p>
+            The keywords <strong>MUST</strong>, <strong>MUST NOT</strong>,
+            <strong>SHOULD</strong>, <strong>MAY</strong>, and <strong>OPTIONAL</strong>
+            are to be interpreted as described in <strong>RFC 2119</strong>.
+          </p>
+        </div>
+        <h3>3.2 Top-Level Structure</h3>
+        <pre>Workflow "&lt;name&gt;" [with &lt;param&gt;+]
+
+[Allow resolvers:
+- &lt;capability-name&gt;]+
+
+&lt;step-or-block&gt;+
+
+Return &lt;symbol&gt;</pre>
+        <p>Input parameters listed after <code>with</code> are immutable and passed into the workflow context. Their types are determined at conformance time via the resolver contract.</p>
+        <p><strong>Note on terminology</strong>: The term “resolver” in workflow syntax (<code>Allow resolvers:</code>) refers to <strong>capabilities</strong> as defined in Section 1.6. This naming preserves developer ergonomics while the underlying model enforces capability-based governance.</p>
+        <h3>3.3 Step Declaration</h3>
+        <pre>[Step &lt;n&gt;:] Ask "&lt;query&gt;" Save as &lt;symbol&gt;
+[Step &lt;n&gt;:] &lt;function&gt;(&lt;args&gt;) Save as &lt;symbol&gt;</pre>
+        <ul>
+          <li><code>Step &lt;n&gt;:</code> is optional and for human readability only</li>
+          <li><code>&lt;function&gt;</code> may be a built-in (e.g., <code>add</code>, <code>concat</code>) or capability name</li>
+          <li><code>Ask</code> is syntactic sugar for natural-language prompting; it compiles to the same capability invocation as <code>&lt;function&gt;(&lt;args&gt;)</code></li>
+          <li><code>&lt;symbol&gt;</code> must be a single alphanumeric identifier (normalized by kernel)</li>
+        </ul>
+        <h3>3.4 Parallel Execution Blocks</h3>
+        <pre>Run in parallel [for &lt;duration&gt;]
+  &lt;step&gt;+
+End</pre>
+        <ul>
+          <li><code>&lt;duration&gt;</code>: integer followed by time unit (<code>ms</code>, <code>s</code>, <code>m</code>, <code>h</code>)</li>
+          <li>If <code>for</code> clause is omitted, block runs until all steps complete</li>
+          <li>All steps inside execute concurrently</li>
+          <li>Context is snapshotted before block entry</li>
+        </ul>
+        <h3>3.5 Conditional Logic</h3>
+        <pre>If &lt;condition&gt;:
+  &lt;step-or-block&gt;+
+[Else:
+  &lt;step-or-block&gt;+]
+EndIf</pre>
+        <ul>
+          <li><code>&lt;condition&gt;</code>: system-provided boolean symbols only (<code>timed_out</code>, <code>escalation_completed</code>)</li>
+          <li>User-defined symbols <strong>cannot</strong> be used in conditions (to preserve deterministic observability)</li>
+        </ul>
+        <h3>3.6 Persistence</h3>
+        <pre>Persist &lt;symbol&gt; to "&lt;filepath&gt;"</pre>
+        <ul>
+          <li>Fails if <code>&lt;symbol&gt;</code> is undefined (semantic enforcement)</li>
+          <li><code>&lt;filepath&gt;</code> is relative to execution environment’s output directory</li>
+        </ul>
+      </div>
+
+      <div class="section" id="sec-4">
+        <h2>4. Semantic Execution Model (Normative)</h2>
+        <h3>4.1 Symbols</h3>
+        <p>A symbol is any named value referenced in a workflow:</p>
+        <ul>
+          <li>inputs</li>
+          <li>step outputs (<code>Save as</code>)</li>
+          <li>emitted values</li>
+          <li>persisted values</li>
+        </ul>
+        <p>Symbols are tracked explicitly by the kernel.</p>
+        <h3>4.2 Symbol Lifecycle</h3>
+        <pre>Declared / Referenced
+↓
+Produced by Capability  
+↓
+Available in Context
+↓
+Consumed or Persisted
+↓
+Observed or Missing</pre>
+        <h3>4.3 Semantic Enforcement Rules</h3>
+        <div class="normative">
+          <strong>The kernel MUST:</strong>
+          <ul>
+            <li>detect when a symbol is referenced but undefined</li>
+            <li>prevent persistence of undefined symbols</li>
+            <li>emit warnings for partial execution</li>
+            <li>never fabricate missing values</li>
+          </ul>
+        </div>
+        <p><strong>Undefined ≠ null ≠ empty.</strong></p>
+        <h3>4.4 Partial Success</h3>
+        <p>O-Lang allows partial workflow success.</p>
+        <p><strong>Example:</strong></p>
+        <ul>
+          <li>Step A succeeds</li>
+          <li>Step B fails to produce output</li>
+          <li>Step C still executes</li>
+        </ul>
+        <div class="normative">
+          <strong>The kernel MUST surface:</strong>
+          <ul>
+            <li>which symbols are missing</li>
+            <li>where they were expected</li>
+            <li>what side-effects were skipped</li>
+          </ul>
+        </div>
+        <h3>4.5 Determinism Boundary (Normative)</h3>
+        <div class="normative">
+          <p>
+            Given identical workflow definitions, capability declarations, and capability outputs,
+            all compliant kernels <strong>MUST</strong> produce:
+          </p>
+          <ul>
+            <li>identical symbol presence and absence</li>
+            <li>equivalent execution traces</li>
+            <li>identical policy decisions</li>
+          </ul>
+          <p>
+            Output content (e.g. LLM-generated text) may differ, but
+            <strong>semantic structure MUST NOT</strong>.
+          </p>
+        </div>
+      </div>
+
+      <div class="section" id="sec-5">
+        <h2>5. Parallel and Timed Execution Semantics (Normative)</h2>
+        <h3>5.1 Parallel Block Lifecycle</h3>
+        <ol>
+          <li>Kernel snapshots current context</li>
+          <li>Launches all steps in block concurrently</li>
+          <li>Waits up to <code>&lt;duration&gt;</code> (if specified)</li>
+          <li>Cancels any incomplete steps after timeout</li>
+          <li>Merges <strong>only successfully resolved symbols</strong> into post-block context</li>
+          <li>Sets <code>timed_out = true</code> if any step was cancelled</li>
+        </ol>
+        <h3>5.2 Symbol Merge Rules</h3>
+        <ul>
+          <li><strong>Resolved symbol</strong>: included in final context</li>
+          <li><strong>Unresolved symbol</strong>: discarded (not set to <code>null</code> or <code>undefined</code>)</li>
+          <li><strong>Partially failed block</strong>: still progresses to next workflow step</li>
+          <li><strong>No implicit error propagation</strong>: failure is observable but not exceptional</li>
+        </ul>
+        <h3>5.3 Escalation Chains (Reserved)</h3>
+        <p>Syntax is reserved for multi-level timeout escalation. Not part of v1.1 core, but kernels MUST ignore unknown block types gracefully.</p>
+      </div>
+
+      <div class="section" id="sec-6">
+        <h2>6. Capability Contract and Multi-Language Support</h2>
+        <h3>6.1 Capability Invocation</h3>
+        <p>Capabilities are invoked via function-call syntax:</p>
+        <pre>medical-api("{symptoms}") Save as diagnosis</pre>
+        <ul>
+          <li>Kernel resolves function name against <code>Allow capabilities</code> list</li>
+          <li>If not allowed, kernel skips step and logs policy violation</li>
+        </ul>
+        <h3>6.2 Input/Output Contract</h3>
+        <ul>
+          <li><strong>Input</strong>: JSON-serializable context subset (only referenced symbols)</li>
+          <li><strong>Output</strong>: Single JSON value or error</li>
+          <li><strong>No side effects outside declared and kernel-permitted boundaries</strong></li>
+        </ul>
+        <h3>6.3 Multi-Language Implementation</h3>
+        <p>Capabilities may be implemented in <strong>any language</strong> that can:</p>
+        <ul>
+          <li>Read JSON input from stdin or HTTP request</li>
+          <li>Write JSON output to stdout or HTTP response</li>
+          <li>Exit with code 0 (success) or non-zero (failure)</li>
+        </ul>
+        <p><strong>Examples:</strong></p>
+        <ul>
+          <li><strong>Python</strong>: HTTP resolver with Flask/FastAPI</li>
+          <li><strong>JavaScript</strong>: Node.js subprocess or HTTP endpoint</li>
+          <li><strong>Rust</strong>: Native binary accepting JSON over stdin</li>
+          <li><strong>Go</strong>: gRPC or REST service</li>
+          <li><strong>Shell</strong>: Script that reads <code>$1</code> as JSON and outputs result</li>
+        </ul>
+        <h3>6.4 Kernel-Capability Interface</h3>
+        <p>Kernels MUST support <strong>at least one</strong> of:</p>
+        <ul>
+          <li><strong>HTTP</strong>: <code>POST /resolve</code> with JSON payload</li>
+          <li><strong>Subprocess</strong>: spawn binary with JSON arg</li>
+          <li><strong>In-process</strong>: language-native function call (for embedded use)</li>
+        </ul>
+        <p><strong>Security note</strong>: Kernels operating in secure mode MUST restrict capability interfaces to sandboxed channels (e.g., HTTP-only). In-process execution is permitted only in development or trusted environments.</p>
+        <p>The choice of interface is <strong>implementation-defined</strong> — the protocol only specifies <strong>what</strong> is called, not <strong>how</strong>.</p>
+        <h3>6.5 Capability Declaration (Normative)</h3>
+        <p>
+          Every capability MUST expose a static declaration document describing its behavior.
+        </p>
+        <pre>{
+  "id": "capability.health.triage",
+  "intents": ["diagnose"],
+  "input_schema": {
+    "symptoms": "string[]"
+  },
+  "output_schema": {
+    "risk_level": "string"
+  },
+  "constraints": {
+    "jurisdiction": ["NG"]
+  }
+}</pre>
+        <div class="normative">
+          <ul>
+            <li>Declarations MUST be static and machine-readable</li>
+            <li>Kernels MUST validate capability behavior against its declaration</li>
+            <li>Undeclared behavior is a semantic violation</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="section" id="sec-7">
+        <h2>7. Runtime Observability</h2>
+        <div class="warning">
+          <strong>This warning:</strong><br>
+          <code>Cannot persist undefined value from "medical_summary"</code>
+        </div>
+        <p><strong>Means:</strong></p>
+        <ul>
+          <li>The symbol existed in intent</li>
+          <li>It did NOT exist in reality</li>
+          <li>The kernel refused to lie</li>
+        </ul>
+        <p><strong>This is semantic truth enforcement.</strong></p>
+        <p>In most frameworks:<br>
+        this would silently write null, "", or crash later.</p>
+        <p><strong>O-Lang makes meaning observable.</strong></p>
+        <h3>7.1 Execution Trace Contract (Normative)</h3>
+        <div class="normative">
+          <p>Kernels MUST emit structured, machine-readable execution traces.</p>
+        </div>
+        <pre>{
+  "workflow": "string",
+  "intent": "string",
+  "step": "number | null",
+  "capability": "string | null",
+  "symbols_produced": ["symbol"],
+  "symbols_missing": ["symbol"],
+  "policy_decision": "allowed | blocked | skipped",
+  "timestamp": "ISO-8601",
+  "trace_id": "opaque-string"
+}</pre>
+        <ul>
+          <li>Trace fields MUST be semantically equivalent across kernels</li>
+          <li>Trace emission MUST NOT be optional</li>
+          <li>Traces MUST correspond to actual execution events</li>
+        </ul>
+      </div>
+
+      <div class="section" id="sec-8">
+        <h2>8. Security Model</h2>
+        <p>O-Lang directly addresses the Confused Deputy Problem (Hardy, 1988).</p>
+        <p><strong>Why orchestration-in-code fails:</strong></p>
+        <ul>
+          <li>execution authority == developer authority</li>
+          <li>tools inherit permissions implicitly</li>
+          <li>no runtime enforcement layer</li>
+        </ul>
+        <p><strong>O-Lang solution:</strong></p>
+        <ul>
+          <li>workflow intent ≠ execution authority</li>
+          <li>capabilities explicitly allowed</li>
+          <li>kernel mediates every invocation</li>
+        </ul>
+        <p><strong>Capabilities never gain power they weren't granted.</strong></p>
+      </div>
+
+      <div class="section" id="sec-15">
+        <h2>15. Error Semantics (Normative)</h2>
+        <p>All errors emitted by the kernel MUST be structured and classified.</p>
+        <pre>{
+  "code": "SYMBOL_UNDEFINED",
+  "message": "Symbol medical_summary was referenced but never produced",
+  "step": 4
+}</pre>
+        <h3>15.1 Standard Error Codes</h3>
+        <ul>
+          <li><code>INVALID_OLANG</code></li>
+          <li><code>UNDECLARED_CAPABILITY</code></li>
+          <li><code>POLICY_VIOLATION</code></li>
+          <li><code>CAPABILITY_FAILURE</code></li>
+          <li><code>SYMBOL_UNDEFINED</code></li>
+          <li><code>TIMEOUT</code></li>
+          <li><code>SEMANTIC_VIOLATION</code></li>
+        </ul>
+        <div class="normative">
+          <ul>
+            <li>Error codes MUST NOT vary across implementations</li>
+            <li>Error messages MAY vary</li>
+            <li>Errors MUST be emitted at the semantic level, not as raw exceptions</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="section" id="sec-9">
+        <h2>9. IoT & Edge Architecture</h2>
+        <pre>[ Sensor / Actuator ]
+↓
+[ Edge Capability ]
+↓
+[ O-Lang Kernel ]
+↓
+[ Policy / Audit / Control Plane ]</pre>
+        <p><strong>Why O-Lang fits IoT better than code orchestration:</strong></p>
+        <ul>
+          <li>offline-safe</li>
+          <li>deterministic replay</li>
+          <li>hardware isolation</li>
+          <li>auditable decisions</li>
+          <li>no dynamic code execution</li>
+        </ul>
+        <p><strong>O-Lang governs when hardware is touched — not how.</strong></p>
+      </div>
+
+      <div class="section" id="sec-10">
+        <h2>10. LangChain Integration</h2>
+        <h3>10.1 LangChain as a Capability</h3>
+        <p>LangChain is just another capability.</p>
+        <div class="integration-example">
+          <code>Step 2: Ask langchain-agent "{query}" Save as answer</code>
+        </div>
+        <h3>10.2 Complementary Usage</h3>
+        <p>LangChain builds the flow → O-Lang governs execution.</p>
+        <div class="quote">
+          <strong>Rule:</strong><br>
+          LangChain may construct intent<br>
+          O-Lang must enforce execution
+        </div>
+      </div>
+
+      <div class="section" id="sec-11">
+        <h2>11. Implementation Guidance</h2>
+        <p>O-Lang is defined by its protocol semantics, not by any specific implementation. Multiple kernel implementations are expected and encouraged.</p>
+        <h3>11.1 Reference Implementation</h3>
+        <p>A reference implementation is provided to:</p>
+        <ul>
+          <li>demonstrate protocol semantics</li>
+          <li>serve as a conformance baseline</li>
+          <li>enable rapid ecosystem adoption</li>
+        </ul>
+        <p>The reference implementation is not normative — the specification takes precedence in all cases.</p>
+        <h3>11.2 Conformance Requirements</h3>
+        <p>All compliant implementations MUST:</p>
+        <ul>
+          <li>implement all normative requirements in this specification</li>
+          <li>produce equivalent semantic execution traces for identical inputs</li>
+          <li>pass all required tests in the official O-Lang Conformance Test Suite (OCTS)</li>
+          <li>Passing conformance tests does not imply runtime trust or certification.</li>
+        </ul>
+        <p>Implementation language, performance characteristics, and internal architecture are not constrained by this specification.</p>
+        <h3>11.3 Ecosystem Interoperability</h3>
+        <p>Kernels in different languages MUST interoperate at the protocol level:</p>
+        <ul>
+          <li>identical workflows produce equivalent contexts</li>
+          <li>capability contracts are language-agnostic</li>
+          <li>audit trails are structurally consistent</li>
+        </ul>
+        <p>This ensures portability across environments while preserving governance guarantees.</p>
+        <h3>11.4 Feature Compliance Matrix</h3>
+        <table style="width:100%; border-collapse: collapse;">
+          <tr>
+            <th style="border:1px solid var(--border); padding:8px;">Feature</th>
+            <th style="border:1px solid var(--border); padding:8px;">Required</th>
+          </tr>
+          <tr><td>Parsing & Validation</td><td>Yes</td></tr>
+          <tr><td>Symbol Enforcement</td><td>Yes</td></tr>
+          <tr><td>Audit Traces</td><td>Yes</td></tr>
+          <tr><td>Parallel Execution</td><td>Yes</td></tr>
+          <tr><td>Timeout Handling</td><td>Yes</td></tr>
+          <tr><td>Escalation Chains</td><td>No</td></tr>
+          <tr><td>Determinism Tier</td><td>No</td></tr>
+        </table>
+      </div>
+
+      <div class="section" id="sec-12">
+        <h2>12. System Classification</h2>
+        <p>O-Lang is not a developer framework, scripting language, or orchestration engine. It is a <strong>semantic governance protocol</strong> designed for systems-level integration.</p>
+        <h3>12.1 What O-Lang Is Not</h3>
+        <ul>
+          <li><strong>Not a DSL</strong> — O-Lang does not define domain logic or business rules.</li>
+          <li><strong>Not an operational workflow engine</strong> — O-Lang operates above traditional workflow engines as a governance layer, providing semantic validation, policy enforcement, and auditability rather than managing execution infrastructure.</li>
+          <li><strong>Not a LangChain alternative</strong> — It does not replace developer-facing AI composition tools.</li>
+        </ul>
+        <h3>12.2 What O-Lang Is</h3>
+        <ul>
+          <li><strong>A semantic execution layer</strong> — Enforces meaning, symbol validity, and intent fidelity across heterogeneous runtimes.</li>
+          <li><strong>A governance boundary</strong> — Mediates all external capability invocations with policy, audit, and compliance enforcement.</li>
+          <li><strong>An AI systems primitive</strong> — Provides the missing contract between application intent and infrastructure execution in regulated AI environments.</li>
+        </ul>
+        <h3>12.3 Non-Goals for v1.1</h3>
+        <p>This specification intentionally does not define:</p>
+        <ul>
+          <li>Capability handler certification</li>
+          <li>Package registry governance</li>
+          <li>Economic trust or reputation models</li>
+          <li>Runtime sandboxing implementation details</li>
+        </ul>
+        <p>These topics are reserved for future versions under O-Lang Foundation governance.</p>
+        <p>This classification ensures correct integration patterns and prevents misuse in contexts where developer-level orchestration is sufficient.</p>
+      </div>
+
+      <div class="section" id="sec-13">
+        <h2>13. Final Principle</h2>
+        <div class="warning">
+          <strong>If orchestration logic can bypass the runtime,<br>
+          then orchestration does not exist.</strong>
+        </div>
+      </div>
+
+      <div class="section" id="sec-14">
+        <h2>14. Conformance Model (Normative)</h2>
+        <h3>14.1 Definition of Conformance</h3>
+        <p>
+          An implementation is considered <strong>O-Lang conformant</strong> if and only if it:
+        </p>
+        <ul>
+          <li>implements all normative requirements in this specification</li>
+          <li>produces equivalent semantic execution traces for identical workflows</li>
+          <li>passes all required tests in the official O-Lang Conformance Test Suite (OCTS)</li>
+        </ul>
+        <h3>14.2 Version Binding</h3>
+        <div class="normative">
+          <p>
+            Conformance is strictly version-bound.
+            Certification for <code>O-Lang/1.1</code> does not imply conformance with any other version.
+          </p>
+        </div>
+        <h3>14.3 Test Traceability</h3>
+        <p>
+          Every conformance test MUST reference one or more normative clauses in this specification.
+          No test may assert behavior not explicitly defined herein.
+        </p>
+      </div>
+    </main>
+
+    <footer>
+      <p>
+        © 2026 O-Lang Protocol. Open specification licensed under Apache 2.0.
+        <br>
+        <a href="https://github.com/O-Lang-Central/resolver-test" target="_blank">Resolver Conformance Test Suite</a>
+      </p>
+      <div class="success" style="margin-top: 1rem; padding: 0.75rem; font-size: 0.875rem;">
+        <strong>Review Note:</strong> This specification is open for technical review focused on 
+        clarity, consistency, and implementability. 
+        <strong>No new semantics will be accepted</strong> — feedback on v1.1 must be limited to 
+        clarification of existing intent. Semantic changes will be considered for v1.2.
+      </div>
+    </footer>
+  </div>
+
+  <!-- Navigation & ToC Logic -->
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const sidebar = document.getElementById('sidebar');
+      const tocList = document.getElementById('toc-list');
+      const toggleBtn = document.getElementById('menuToggle');
+      const sections = document.querySelectorAll('.section');
+
+      // Build ToC
+      sections.forEach(section => {
+        const h2 = section.querySelector('h2');
+        if (!h2 || !section.id) return;
+        const li = document.createElement('li');
+        const a = document.createElement('a');
+        a.href = '#' + section.id;
+        a.textContent = h2.textContent;
+        a.addEventListener('click', (e) => {
+          e.preventDefault();
+          document.querySelector('#' + section.id).scrollIntoView({ behavior: 'smooth' });
+          if (window.innerWidth <= 900) sidebar.classList.remove('open');
+        });
+        li.appendChild(a);
+        tocList.appendChild(li);
+      });
+
+      // Mobile toggle
+      if (toggleBtn) {
+        toggleBtn.addEventListener('click', () => {
+          sidebar.classList.toggle('open');
+        });
+      }
+
+      // Close sidebar on outside click (mobile)
+      document.addEventListener('click', (e) => {
+        if (window.innerWidth <= 900 && 
+            !sidebar.contains(e.target) && 
+            e.target !== toggleBtn) {
+          sidebar.classList.remove('open');
+        }
+      });
+
+      // Active section tracking
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            document.querySelectorAll('.toc-list a').forEach(el => el.classList.remove('active'));
+            const id = entry.target.id;
+            const activeLink = document.querySelector(`.toc-list a[href="#${id}"]`);
+            if (activeLink) activeLink.classList.add('active');
+          }
+        });
+      }, { threshold: 0.5 });
+
+      sections.forEach(section => observer.observe(section));
+    });
+  </script>
+</body>
+</html>

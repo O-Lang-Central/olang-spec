@@ -1,0 +1,17 @@
+name: Change Proposal (RFC Path)
+about: Suggest new feature or breaking change (for v1.2+)
+title: "Proposal: [feature]"
+labels: ["proposal", "rfc-candidate"]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem Statement
+    validations:
+      required: true
+  - type: textarea
+    id: solution
+    attributes:
+      label: Proposed Solution
+    validations:
+      required: true
