@@ -13,6 +13,8 @@ O-Lang is a **semantic orchestration protocol** for governing AI and automation 
 
 O-Lang is **not** a developer framework, DSL, or LangChain alternative. It is a **governance layer** for AI systems.
 
+- [How O-lang differs from LangChain](docs/comparison-langchain.md)
+
 ## Current Status
 - **Stable**: v1.1 (under public review)
 - **Conformance**: Resolver contract defined; test harness available
